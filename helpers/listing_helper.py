@@ -1,5 +1,5 @@
 # Remove and then publish each listing
-def update_listings(listings, type, scraper):
+def update_listings(listings, listing_type, scraper):
 	# If listings are empty stop the function
 	if not listings:
 		return
@@ -7,13 +7,13 @@ def update_listings(listings, type, scraper):
 	# Check if listing is already listed and remove it then publish it like a new one
 	for listing in listings:
 		# Remove listing if it is already published
-		remove_listing(listing, type, scraper)
+		remove_listing(listing, listing_type, scraper)
 
 		# Publish the listing in marketplace
-		publish_listing(listing, type, scraper)
+		publish_listing(listing, listing_type, scraper)
 
 
-def remove_listing(data, listing_type, scraper) :
+def remove_listing(data, listing_type, scraper):
 	title = generate_title_for_listing_type(data, listing_type)
 	listing_title = find_listing_by_title(title, scraper)
 
@@ -37,6 +37,7 @@ def remove_listing(data, listing_type, scraper) :
 	
 	# Wait until the popup is closed
 	scraper.element_wait_to_be_invisible('div[aria-label="Your Listing"]')
+
 
 def publish_listing(data, listing_type, scraper):
 	# Click on create new listing button
@@ -98,6 +99,7 @@ def generate_multiple_images_path(path, images):
 
 	return images_path
 
+
 # Add specific fields for listing from type vehicle
 def add_fields_for_vehicle(data, scraper):
 	# Expand vehicle type select
@@ -124,6 +126,7 @@ def add_fields_for_vehicle(data, scraper):
 	# Select fuel type
 	scraper.element_click_by_xpath('//span[text()="' + data['Fuel Type'] + '"]')
 
+
 # Add specific fields for listing from type item
 def add_fields_for_item(data, scraper):
 	scraper.element_send_keys('label[aria-label="Title"] input', data['Title'])
@@ -143,6 +146,7 @@ def add_fields_for_item(data, scraper):
 	if data['Category'] == 'Sports & Outdoors':
 		scraper.element_send_keys('label[aria-label="Brand"] input', data['Brand'])
 
+
 def generate_title_for_listing_type(data, listing_type):
 	title = ''
 
@@ -153,6 +157,7 @@ def generate_title_for_listing_type(data, listing_type):
 		title = data['Year'] + ' ' + data['Make'] + ' ' + data['Model']
 
 	return title
+
 
 def add_listing_to_multiple_groups(data, scraper):
 	# Create an array for group names by spliting the string by this symbol ";"
@@ -168,6 +173,7 @@ def add_listing_to_multiple_groups(data, scraper):
 		group_name = group_name.strip()
 
 		scraper.element_click_by_xpath('//span[text()="' + group_name + '"]')
+
 
 def post_listing_to_multiple_groups(data, listing_type, scraper):
 	title = generate_title_for_listing_type(data, listing_type)
@@ -203,9 +209,9 @@ def post_listing_to_multiple_groups(data, listing_type, scraper):
 	
 		scraper.element_click_by_xpath('//span[text()="' + group_name + '"]')
 		
-		if (scraper.find_element('[aria-label="Create a public post…"]', False, 3)):
+		if scraper.find_element('[aria-label="Create a public post…"]', False, 3):
 			scraper.element_send_keys('[aria-label="Create a public post…"]', data['Description'])
-		elif (scraper.find_element('[aria-label="Write something..."]', False, 3)):
+		elif scraper.find_element('[aria-label="Write something..."]', False, 3):
 			scraper.element_send_keys('[aria-label="Write something..."]', data['Description'])
 		
 		scraper.element_click('[aria-label="Post"]:not([aria-disabled])')
@@ -214,15 +220,16 @@ def post_listing_to_multiple_groups(data, listing_type, scraper):
 		scraper.element_wait_to_be_invisible('[aria-label="Loading...]"')
 		scraper.find_element_by_xpath('//span[text()="Shared to your group."]', False, 10)
 
+
 def find_listing_by_title(title, scraper):
-	searchInput = scraper.find_element('input[placeholder="Search your listings"]', False)
-	# Search input field is not existing	
-	if not searchInput:
+	search_input = scraper.find_element('input[placeholder="Search your listings"]', False)
+	# Search input field is not existing
+	if not search_input:
 		return False
-	
+
 	# Clear input field for searching listings before entering title
 	scraper.element_delete_text('input[placeholder="Search your listings"]')
 	# Enter the title of the listing in the input for search
 	scraper.element_send_keys('input[placeholder="Search your listings"]', title)
-	
+
 	return scraper.find_element_by_xpath('//span[text()="' + title + '"]', False, 10)

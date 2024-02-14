@@ -1,6 +1,11 @@
+import logging
 from helpers.scraper import Scraper
 from helpers.csv_helper import get_data_from_csv
 from helpers.listing_helper import update_listings
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 scraper = Scraper('https://facebook.com')
 
