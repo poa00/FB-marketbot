@@ -17,11 +17,11 @@ scraper.go_to_page('https://facebook.com/marketplace/you/selling')
 listing = Listing(scraper)
 
 # Get data for item type listings from csvs/items.csv
-item_listings = get_data_from_csv('items')
+item_listings = get_data_from_csv('csvs', 'items.csv')
 # Publish all of the items into the facebook marketplace
 listing.update_listings(item_listings, 'item')
 
 # Get data for vechile type listings from csvs/vechiles.csv
-vehicle_listings = get_data_from_csv('vehicles')
+vehicle_listings = get_data_from_csv('csvs', 'vehicles.csv')
 # Publish all of the vehicles into the facebook marketplace
 listing.update_listings(vehicle_listings, 'vehicle')

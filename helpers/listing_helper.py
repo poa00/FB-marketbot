@@ -1,4 +1,6 @@
 # Remove and then publish each listing
+import os
+
 
 class Listing:
 	def __init__(self, scraper):
@@ -35,7 +37,6 @@ class Listing:
 		if self.scraper.find_element(confirm_delete_selector, False, 3):
 			self.scraper.element_click(confirm_delete_selector)
 		else:
-			confirm_delete_selector = 'div[aria-label="Delete Listing"] div[aria-label="Delete"][tabindex="0"]'
 			if self.scraper.find_element(confirm_delete_selector, True, 3):
 				self.scraper.element_click(confirm_delete_selector)
 
@@ -51,6 +52,7 @@ class Listing:
 		# Create string that contains all the image paths separated by \n
 		images_path = self.generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
 		# Add images to the listing
+		# TODO: Allow image file-like objects to be referenced instead of a string/path.
 		self.scraper.input_file_add_files('input[accept="image/*,image/heif,image/heic"]', images_path)
 
 		# Add specific fields based on the listing_type
@@ -78,15 +80,12 @@ class Listing:
 			self.post_listing_to_multiple_groups(data, listing_type)
 
 	@staticmethod
-	def generate_multiple_images_path(path, images):
+	def generate_multiple_images_path(path, image_names):
 		# Last character must be '/' because after that we are adding the name of the image
-		if path[-1] != '/':
-			path += '/'
+		if path[-1] != os.path.sep:
+			path += os.path.sep
 
 		images_path = ''
-
-		# Split image names into array by this symbol ";"
-		image_names = images.split(';')
 
 		# Create string that contains all the image paths separated by \n
 		if image_names:

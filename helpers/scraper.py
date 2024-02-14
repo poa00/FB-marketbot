@@ -190,7 +190,7 @@ class Scraper:
             element = WebDriverWait(self.driver, wait_element_time).until(wait_until)
             return element
         except TimeoutException:
-            self.logger.error(f'Timed out waiting for the element with xpath "{xpath}" to load')
+            self.logger.warning(f'Timed out waiting for the element with xpath "{xpath}" to load')
             if exit_on_missing_element:
                 exit()
             else:
@@ -267,8 +267,7 @@ class Scraper:
             self.logger.error(f'Timed out waiting for the input_file with selector "{selector}" to load')
             exit()
         except InvalidArgumentException:
-            self.logger.error(f'Exiting from the program! \
-            Please check if these file paths are correct:\n{files}')
+            self.logger.error(f'Exiting from the program! Please check if these file paths are correct:\n{files}')
             exit()
         except Exception as e:
             self.logger.exception(f'Unexpected error while waiting for element with selector "{selector}": {e}')
