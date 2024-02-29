@@ -36,7 +36,8 @@ class Scraper:
 		self.driver_options = Options()
 
 		arguments = [
-			'--disable-blink-features=AutomationControlled'
+			'--disable-blink-features=AutomationControlled',
+			'--headless=new'
 		]
 
 		experimental_options = {

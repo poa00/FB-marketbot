@@ -1,3 +1,5 @@
+import os
+
 # Remove and then publish each listing
 def update_listings(listings, type, scraper):
 	# If listings are empty stop the function
@@ -45,7 +47,9 @@ def publish_listing(data, listing_type, scraper):
 	scraper.element_click('a[href="/marketplace/create/' + listing_type + '/"]')
 
 	# Create string that contains all of the image paths separeted by \n
-	images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
+	# images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
+	images_path = generate_multiple_images_path_from_repo_root(data['Photos Folder'], data['Photos Names'])
+
 	# Add images to the the listing
 	scraper.input_file_add_files('input[accept="image/*,image/heif,image/heic"]', images_path)
 
@@ -82,6 +86,33 @@ def generate_multiple_images_path(path, images):
 		path += '/'
 
 	images_path = ''
+
+	# Split image names into array by this symbol ";"
+	image_names = images.split(';')
+
+	# Create string that contains all of the image paths separeted by \n
+	if image_names:
+		for image_name in image_names:
+			# Remove whitespace before and after the string
+			image_name = image_name.strip()
+
+			# Add "\n" for indicating new file
+			if images_path != '':
+				images_path += '\n'
+
+			images_path += path + image_name
+
+	return images_path
+
+def generate_multiple_images_path_from_repo_root(path_from_repo_root, images):
+	if path_from_repo_root[-1] != '/':
+		path_from_repo_root += '/'
+	if path_from_repo_root[0] == '/':
+		path_from_repo_root = path_from_repo_root[1:]
+
+	images_path = ''
+	repo_root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	path = os.path.join(repo_root_path, path_from_repo_root)
 
 	# Split image names into array by this symbol ";"
 	image_names = images.split(';')
