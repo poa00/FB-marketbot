@@ -1,6 +1,10 @@
 from helpers.scraper import Scraper
 from helpers.csv_helper import get_data_from_csv
 from helpers.listing_helper import update_listings
+from dotenv import load_dotenv
+
+# Load variables from the .env file
+load_dotenv()
 
 scraper = Scraper('https://facebook.com')
 
