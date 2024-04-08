@@ -1,3 +1,5 @@
+import os
+
 # Remove and then publish each listing
 def update_listings(listings, type, scraper):
 	# If listings are empty stop the function
@@ -45,7 +47,9 @@ def publish_listing(data, listing_type, scraper):
 	scraper.element_click('a[href="/marketplace/create/' + listing_type + '/"]')
 
 	# Create string that contains all of the image paths separeted by \n
-	images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
+	# images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
+	images_path = generate_multiple_images_path_from_repo_root(data['Photos Folder'], data['Photos Names'])
+
 	# Add images to the the listing
 	scraper.input_file_add_files('input[accept="image/*,image/heif,image/heic"]', images_path)
 
@@ -54,10 +58,12 @@ def publish_listing(data, listing_type, scraper):
 	# Call function by name dynamically
 	globals()[function_name](data, scraper)
 	
-	scraper.element_send_keys('label[aria-label="Price"] input', data['Price'])
-	scraper.element_send_keys('label[aria-label="Description"] textarea', data['Description'])
-	scraper.element_send_keys('label[aria-label="Location"] input', data['Location'])
-	scraper.element_click('ul[role="listbox"] li:first-child > div')
+	# common fields for vehicle and item
+	if listing_type != 'rental':
+		scraper.element_send_keys('label[aria-label="Price"] input', data['Price'])
+		scraper.element_send_keys('label[aria-label="Description"] textarea', data['Description'])
+		scraper.element_send_keys('label[aria-label="Location"] input', data['Location'])
+		scraper.element_click('ul[role="listbox"] li:first-child > div')
 
 	next_button_selector = 'div [aria-label="Next"] > div'
 	next_button = scraper.find_element(next_button_selector, False, 3)
@@ -80,6 +86,33 @@ def generate_multiple_images_path(path, images):
 		path += '/'
 
 	images_path = ''
+
+	# Split image names into array by this symbol ";"
+	image_names = images.split(';')
+
+	# Create string that contains all of the image paths separeted by \n
+	if image_names:
+		for image_name in image_names:
+			# Remove whitespace before and after the string
+			image_name = image_name.strip()
+
+			# Add "\n" for indicating new file
+			if images_path != '':
+				images_path += '\n'
+
+			images_path += path + image_name
+
+	return images_path
+
+def generate_multiple_images_path_from_repo_root(path_from_repo_root, images):
+	if path_from_repo_root[-1] != '/':
+		path_from_repo_root += '/'
+	if path_from_repo_root[0] == '/':
+		path_from_repo_root = path_from_repo_root[1:]
+
+	images_path = ''
+	repo_root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	path = os.path.join(repo_root_path, path_from_repo_root)
 
 	# Split image names into array by this symbol ";"
 	image_names = images.split(';')
@@ -143,6 +176,60 @@ def add_fields_for_item(data, scraper):
 	if data['Category'] == 'Sports & Outdoors':
 		scraper.element_send_keys('label[aria-label="Brand"] input', data['Brand'])
 
+def add_fields_for_rental(data, scraper):
+	# Scroll to "Category" select field
+	scraper.scroll_to_element('label[aria-label="Home for Sale or Rent"]')
+	# Expand Sale or Rent select
+	scraper.element_click('label[aria-label="Home for Sale or Rent"]')
+	# Select Rent
+	scraper.element_click_by_xpath('//span[text()="Rent"]')
+
+	# Scroll to "Rental type" select field
+	scraper.scroll_to_element('label[aria-label="Rental type"]')
+	# Expand Sale or Rent select
+	scraper.element_click('label[aria-label="Rental type"]')
+	# Select Rental type
+	scraper.element_click_by_xpath('//span[text()="' + data['Rental Type'] + '"]')
+	
+	# Basic details
+	scraper.element_send_keys('label[aria-label="Number of bedrooms"] input', data['# Bedrooms'])
+	scraper.element_send_keys('label[aria-label="Number of bathrooms"] input', data['# Bathrooms'])
+	scraper.element_send_keys('label[aria-label="Price per month"] input', data['Price'])
+	scraper.element_send_keys('label[aria-label="Rental address"] input', data['query address'])
+	scraper.element_click_by_xpath('//span[text()="' + data['approx address'] + '"]')
+	scraper.element_send_keys('label[aria-label="Rental description"] textarea', data['Description'])
+
+	# Advanced details
+	if data['square ft'] != '':
+		scraper.element_send_keys('label[aria-label="Property square feet"] input', data['square ft'])
+	if data['date available'] != '':
+		scraper.element_send_keys('label[aria-label="Choose Date"] input', data['date available'])
+	# Laundry type
+	if data['laundry'] != '':
+		scraper.scroll_to_element('label[aria-label="Laundry type"]')
+		scraper.element_click('label[aria-label="Laundry type"]')
+		scraper.element_click_by_xpath('//span[text()="' + data['laundry'] + '"]')
+	# Parking type
+	if data['parking'] != '':
+		scraper.scroll_to_element('label[aria-label="Parking type"]')
+		scraper.element_click('label[aria-label="Parking type"]')
+		scraper.element_click_by_xpath('//span[text()="' + data['parking'] + '"]')
+	# Air conditioning type
+	if data['air conditioning'] != '':
+		scraper.scroll_to_element('label[aria-label="Air conditioning type"]')
+		scraper.element_click('label[aria-label="Air conditioning type"]')
+		scraper.element_click_by_xpath('//span[text()="' + data['air conditioning'] + '"]')
+	# Heating type
+	if data['heating'] != '':
+		scraper.scroll_to_element('label[aria-label="Heating type"]')
+		scraper.element_click('label[aria-label="Heating type"]')
+		scraper.element_click_by_xpath('//span[text()="' + data['heating'] + '"]')
+	
+
+
+
+
+
 def generate_title_for_listing_type(data, listing_type):
 	title = ''
 
@@ -152,6 +239,19 @@ def generate_title_for_listing_type(data, listing_type):
 	if listing_type == 'vehicle':
 		title = data['Year'] + ' ' + data['Make'] + ' ' + data['Model']
 
+	if listing_type == 'rental':
+		if data['# Bathrooms'] == 1:
+			title = data['# Bathrooms'] + ' Bath ' + data['Rental Type']
+		else:
+			title = data['# Bathrooms'] + ' Baths ' + data['Rental Type']
+
+		if data['# Bedrooms'] == 0 or data['# Bedrooms'] == '':
+			title = 'Studio ' + title
+		elif int(data['# Bedrooms']) == 1:
+			title = data['# Bedrooms'] + ' Bed ' + title
+		else:
+			title = data['# Bedrooms'] + ' Beds ' + title
+
 	return title
 
 def add_listing_to_multiple_groups(data, scraper):
@@ -159,7 +259,7 @@ def add_listing_to_multiple_groups(data, scraper):
 	group_names = data['Groups'].split(';')
 
 	# If the groups are empty do not do nothing
-	if not group_names:
+	if not group_names or group_names == ['']:
 		return
 
 	# Post in different groups

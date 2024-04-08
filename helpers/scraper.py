@@ -36,7 +36,8 @@ class Scraper:
 		self.driver_options = Options()
 
 		arguments = [
-			'--disable-blink-features=AutomationControlled'
+			'--disable-blink-features=AutomationControlled',
+			# '--headless=new'
 		]
 
 		experimental_options = {
@@ -74,8 +75,13 @@ class Scraper:
 			if is_logged_in:
 				return
 		
+		# Log the user in based on credentials in .env file
+		self.element_send_keys('input[aria-label="Email or phone number"]', os.getenv('FACEBOOK_USER'))
+		self.element_send_keys('input[aria-label="Password"]', os.getenv('FACEBOOK_PASS'))
+		self.element_click('button[name="l	ogin"]')
+		
 		# Wait for the user to log in with maximum amount of time 5 minutes
-		print('Please login manually in the browser and after that you will be automatically loged in with cookies. Note that if you do not log in for five minutes, the program will turn off.')
+		# print('Please login manually in the browser and after that you will be automatically loged in with cookies. Note that if you do not log in for five minutes, the program will turn off.')
 		is_logged_in = self.is_logged_in(300)
 
 		# User is not logged in so exit from the program
